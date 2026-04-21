@@ -1,122 +1,149 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { Heart, MessageCircle } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth.jsx'
+import WonderModal from '../components/WonderModal'
 
-// ── Scatter icons (SVGs inline as components) ────────────────
-function Ammonite({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 80 80" fill="none">
-      <path d="M40 8C22.3 8 8 22.3 8 40s14.3 32 32 32 32-14.3 32-32S57.7 8 40 8z" stroke="currentColor" strokeWidth="1" fill="none"/>
-      <path d="M40 18c-12.2 0-22 9.8-22 22s9.8 22 22 22 22-9.8 22-22-9.8-22-22-22z" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.7"/>
-      <path d="M40 28c-6.6 0-12 5.4-12 12s5.4 12 12 12 12-5.4 12-12-5.4-12-12-12z" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.5"/>
-      <circle cx="40" cy="40" r="4" fill="currentColor" opacity="0.3"/>
-    </svg>
-  )
-}
-function EyeIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 100 60" fill="none">
-      <path d="M5 30 Q25 5 50 5 Q75 5 95 30 Q75 55 50 55 Q25 55 5 30z" stroke="currentColor" strokeWidth="1" fill="none"/>
-      <circle cx="50" cy="30" r="14" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.7"/>
-      <circle cx="50" cy="30" r="7" fill="currentColor" opacity="0.2"/>
-      <circle cx="54" cy="26" r="2.5" fill="currentColor" opacity="0.3"/>
-    </svg>
-  )
-}
-function AtomIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 90 90" fill="none">
-      <circle cx="45" cy="45" r="5" fill="currentColor" opacity="0.3"/>
-      <ellipse cx="45" cy="45" rx="38" ry="15" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-      <ellipse cx="45" cy="45" rx="38" ry="15" stroke="currentColor" strokeWidth="0.8" fill="none" transform="rotate(60 45 45)"/>
-      <ellipse cx="45" cy="45" rx="38" ry="15" stroke="currentColor" strokeWidth="0.8" fill="none" transform="rotate(120 45 45)"/>
-    </svg>
-  )
-}
-function LeafIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 60 80" fill="none">
-      <path d="M30 75 C30 75 8 55 8 30 C8 12 18 5 30 5 C42 5 52 12 52 30 C52 55 30 75 30 75Z" stroke="currentColor" strokeWidth="1" fill="none"/>
-      <line x1="30" y1="75" x2="30" y2="5" stroke="currentColor" strokeWidth="0.8"/>
-      <line x1="30" y1="35" x2="18" y2="22" stroke="currentColor" strokeWidth="0.6" opacity="0.7"/>
-      <line x1="30" y1="45" x2="44" y2="32" stroke="currentColor" strokeWidth="0.6" opacity="0.7"/>
-      <line x1="30" y1="55" x2="16" y2="45" stroke="currentColor" strokeWidth="0.6" opacity="0.5"/>
-    </svg>
-  )
-}
-function SpiralIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 80 80" fill="none">
-      <path d="M40 40 Q40 10 70 10 Q70 70 10 70 Q10 30 40 30 Q40 50 55 50 Q55 25 25 25 Q25 55 50 55"
-        stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
-    </svg>
-  )
-}
+// ── Scatter icons ────────────────────────────────────────────
+const Ammonite = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none">
+    <path d="M40 8C22.3 8 8 22.3 8 40s14.3 32 32 32 32-14.3 32-32S57.7 8 40 8z" stroke="currentColor" strokeWidth="1" fill="none"/>
+    <path d="M40 18c-12.2 0-22 9.8-22 22s9.8 22 22 22 22-9.8 22-22-9.8-22-22-22z" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.7"/>
+    <path d="M40 28c-6.6 0-12 5.4-12 12s5.4 12 12 12 12-5.4 12-12-5.4-12-12-12z" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.5"/>
+    <circle cx="40" cy="40" r="4" fill="currentColor" opacity="0.3"/>
+  </svg>
+)
+const EyeIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 100 60" fill="none">
+    <path d="M5 30 Q25 5 50 5 Q75 5 95 30 Q75 55 50 55 Q25 55 5 30z" stroke="currentColor" strokeWidth="1" fill="none"/>
+    <circle cx="50" cy="30" r="14" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.7"/>
+    <circle cx="50" cy="30" r="7" fill="currentColor" opacity="0.2"/>
+    <circle cx="54" cy="26" r="2.5" fill="currentColor" opacity="0.3"/>
+  </svg>
+)
+const AtomIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 90 90" fill="none">
+    <circle cx="45" cy="45" r="5" fill="currentColor" opacity="0.3"/>
+    <ellipse cx="45" cy="45" rx="38" ry="15" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+    <ellipse cx="45" cy="45" rx="38" ry="15" stroke="currentColor" strokeWidth="0.8" fill="none" transform="rotate(60 45 45)"/>
+    <ellipse cx="45" cy="45" rx="38" ry="15" stroke="currentColor" strokeWidth="0.8" fill="none" transform="rotate(120 45 45)"/>
+  </svg>
+)
+const LeafIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 60 80" fill="none">
+    <path d="M30 75 C30 75 8 55 8 30 C8 12 18 5 30 5 C42 5 52 12 52 30 C52 55 30 75 30 75Z" stroke="currentColor" strokeWidth="1" fill="none"/>
+    <line x1="30" y1="75" x2="30" y2="5" stroke="currentColor" strokeWidth="0.8"/>
+    <line x1="30" y1="35" x2="18" y2="22" stroke="currentColor" strokeWidth="0.6" opacity="0.7"/>
+    <line x1="30" y1="45" x2="44" y2="32" stroke="currentColor" strokeWidth="0.6" opacity="0.7"/>
+    <line x1="30" y1="55" x2="16" y2="45" stroke="currentColor" strokeWidth="0.6" opacity="0.5"/>
+  </svg>
+)
+const SpiralIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none">
+    <path d="M40 40 Q40 10 70 10 Q70 70 10 70 Q10 30 40 30 Q40 50 55 50 Q55 25 25 25 Q25 55 50 55"
+      stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
+  </svg>
+)
 
-// ── Ticker data ──────────────────────────────────────────────
 const TICKERS = [
-  'Marine biologists discover octopuses dream in colour',
+  'Marine biologists discover octopuses cycle through vivid colour patterns during sleep',
   'A star 2,000 light-years away just sent us a repeating signal',
-  'Physicists confirm time moves slower near the mass of a coffee cup',
-  'New fungal network found spanning 2,400 acres underground',
-  'Dolphins have been documented calling each other by name',
-  'Roman concrete self-heals using 2,000-year-old chemistry',
-  'A 13-sided shape tiles infinitely without ever repeating',
+  'Physicists confirm time moves slower just 1mm closer to the ground',
+  'The world\'s largest organism is a fungus in Oregon covering 10 square kilometres',
+  'Dolphins have been documented calling each other by name since at least the 1980s',
+  'Roman concrete self-heals using 2,000-year-old volcanic chemistry',
+  'A 13-sided shape tiles a plane infinitely without ever repeating — found in 2023',
+  'A baby received the world\'s first personalised gene-editing treatment in 2025',
+  'Dodos were fast, agile, and smart — their dumb reputation was entirely fabricated',
+  'SpaceX caught a rocket booster mid-air using mechanical arms in 2024',
 ]
 
-// ── Wonder preview cards ─────────────────────────────────────
-const PREVIEW_WONDERS = [
-  {
-    tag: 'Space', color: '#4A5580', emoji: '🌌',
-    headline: 'James Webb captures a planet where it rains iron — sideways',
-    ago: '12 min ago', likes: '2.4k', featured: true,
-  },
-  {
-    tag: 'Biology', color: '#4A7C59', emoji: '🧬',
-    headline: 'Plants can hear caterpillars chewing and boost their defences',
-    ago: '34 min ago', likes: '847',
-  },
-  {
-    tag: 'Psychology', color: '#D4604A', emoji: '🧠',
-    headline: 'Your brain replays your day in fast-forward while you blink',
-    ago: '1hr ago', likes: '1.1k',
-  },
-  {
-    tag: 'Mathematics', color: '#4A5580', emoji: '🔢',
-    headline: 'A 13-sided shape tiles a plane infinitely without repeating',
-    ago: '2hrs ago', likes: '3.2k',
-  },
-  {
-    tag: 'History', color: '#B85C38', emoji: '🏛',
-    headline: 'Roman concrete gets stronger over centuries — scientists know why',
-    ago: '3hrs ago', likes: '2.7k',
-  },
-]
+const CATEGORY_COLORS = {
+  space:        '#4A5580',
+  biology:      '#4A7C59',
+  psychology:   '#D4604A',
+  mathematics:  '#4A5580',
+  chemistry:    '#C4922A',
+  history:      '#B85C38',
+  ocean:        '#2A7BAD',
+  physics:      '#7B5EA7',
+  ecology:      '#4A7C59',
+  invention:    '#C4922A',
+  palaeontology:'#B85C38',
+}
+
+function fmtNum(n = 0) {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+  return n
+}
+
+function timeAgo(dateStr) {
+  const diff  = Date.now() - new Date(dateStr).getTime()
+  const mins  = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days  = Math.floor(diff / 86400000)
+  if (mins  < 1)  return 'just now'
+  if (mins  < 60) return `${mins}m ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days  < 7)  return `${days}d ago`
+  return new Date(dateStr).toLocaleDateString('en', { month: 'short', day: 'numeric' })
+}
 
 const CATEGORY_TAGS = [
-  { emoji: '🌌', label: 'Space' },
-  { emoji: '🧬', label: 'Biology' },
-  { emoji: '🧠', label: 'Psychology' },
-  { emoji: '🔢', label: 'Mathematics' },
-  { emoji: '⚡', label: 'Physics' },
-  { emoji: '🌊', label: 'Ocean' },
-  { emoji: '🏛', label: 'History' },
-  { emoji: '🌿', label: 'Ecology' },
-  { emoji: '🧩', label: 'Philosophy' },
-  { emoji: '💡', label: 'Invention' },
+  { emoji: '🌌', label: 'Space',        slug: 'space' },
+  { emoji: '🧬', label: 'Biology',      slug: 'biology' },
+  { emoji: '🧠', label: 'Psychology',   slug: 'psychology' },
+  { emoji: '🔢', label: 'Mathematics',  slug: 'mathematics' },
+  { emoji: '⚡', label: 'Physics',      slug: 'physics' },
+  { emoji: '🌊', label: 'Ocean',        slug: 'ocean' },
+  { emoji: '🏛',  label: 'History',     slug: 'history' },
+  { emoji: '🌿', label: 'Ecology',      slug: 'ecology' },
+  { emoji: '🧩', label: 'Philosophy',   slug: 'philosophy' },
+  { emoji: '💡', label: 'Invention',    slug: 'invention' },
 ]
 
 export default function Landing() {
-  const { session, profile, signInWithGoogle } = useAuth()
+  const { session, signInWithGoogle } = useAuth()
+  const [wonders, setWonders]         = useState([])
+  const [activeWonder, setActive]     = useState(null)
+  const [likedIds, setLikedIds]       = useState(new Set())
   const canvasRef = useRef(null)
 
-  // Sim boids canvas
+  // Fetch real wonders from DB
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from('wonders_with_author')
+        .select('*')
+        .order('published_at', { ascending: false })
+        .limit(5)
+      if (data) setWonders(data)
+    }
+    load()
+  }, [])
+
+  // Fetch which ones the signed-in user has liked
+  useEffect(() => {
+    if (!session || wonders.length === 0) return
+    const ids = wonders.map(w => w.id)
+    supabase
+      .from('likes')
+      .select('target_id')
+      .eq('user_id', session.user.id)
+      .eq('target_type', 'wonder')
+      .in('target_id', ids)
+      .then(({ data }) => {
+        if (data) setLikedIds(new Set(data.map(r => r.target_id)))
+      })
+  }, [session, wonders])
+
+  // Boids canvas
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     let raf
-
     function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight }
     resize()
     const ro = new ResizeObserver(resize)
@@ -134,21 +161,20 @@ export default function Landing() {
         let sx = 0, sy = 0, ax = 0, ay = 0, cx = 0, cy = 0, sn = 0, an = 0
         for (const o of boids) {
           if (o === b) continue
-          const dx = o.x - b.x, dy = o.y - b.y, d = Math.sqrt(dx * dx + dy * dy)
-          if (d < 26 && d > 0) { sx -= dx / d; sy -= dy / d; sn++ }
+          const dx = o.x - b.x, dy = o.y - b.y, d = Math.sqrt(dx*dx + dy*dy)
+          if (d < 26 && d > 0) { sx -= dx/d; sy -= dy/d; sn++ }
           if (d < 55) { ax += o.vx; ay += o.vy; an++; cx += o.x; cy += o.y }
         }
-        if (sn) { b.vx += sx / sn * 0.09; b.vy += sy / sn * 0.09 }
-        if (an) { b.vx += (ax / an - b.vx) * 0.04; b.vy += (ay / an - b.vy) * 0.04; b.vx += (cx / an - b.x) * 0.001; b.vy += (cy / an - b.y) * 0.001 }
-        const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy)
-        if (spd > 2.4) { b.vx = b.vx / spd * 2.4; b.vy = b.vy / spd * 2.4 }
-        if (spd < 0.8 && spd > 0) { b.vx = b.vx / spd * 0.8; b.vy = b.vy / spd * 0.8 }
-        b.x = (b.x + b.vx + canvas.width) % canvas.width
+        if (sn) { b.vx += sx/sn * 0.09; b.vy += sy/sn * 0.09 }
+        if (an) { b.vx += (ax/an - b.vx) * 0.04; b.vy += (ay/an - b.vy) * 0.04; b.vx += (cx/an - b.x) * 0.001; b.vy += (cy/an - b.y) * 0.001 }
+        const spd = Math.sqrt(b.vx*b.vx + b.vy*b.vy)
+        if (spd > 2.4) { b.vx = b.vx/spd * 2.4; b.vy = b.vy/spd * 2.4 }
+        if (spd < 0.8 && spd > 0) { b.vx = b.vx/spd * 0.8; b.vy = b.vy/spd * 0.8 }
+        b.x = (b.x + b.vx + canvas.width)  % canvas.width
         b.y = (b.y + b.vy + canvas.height) % canvas.height
-
         const angle = Math.atan2(b.vy, b.vx)
         ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(angle)
-        ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-4, 2.5); ctx.lineTo(-3, 0); ctx.lineTo(-4, -2.5); ctx.closePath()
+        ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(-4,2.5); ctx.lineTo(-3,0); ctx.lineTo(-4,-2.5); ctx.closePath()
         ctx.fillStyle = 'rgba(242,237,227,0.5)'; ctx.fill(); ctx.restore()
       }
       raf = requestAnimationFrame(step)
@@ -157,270 +183,289 @@ export default function Landing() {
     return () => { cancelAnimationFrame(raf); ro.disconnect() }
   }, [])
 
+  const featured = wonders[0] ?? null
+  const rest     = wonders.slice(1)
+
   return (
     <div className="min-h-screen">
 
-      {/* ── HERO ───────────────────────────────────────── */}
+      {/* ── HERO ── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-20 pb-0 overflow-hidden">
-
-        {/* Scattered icons — hidden on very small screens */}
         <Ammonite  className="scatter-icon text-ink w-16 sm:w-20 top-[12%] left-[4%] sm:left-[6%]" />
-        <EyeIcon   className="scatter-icon text-ink w-20 sm:w-24 top-[8%] right-[4%] sm:right-[7%]" />
-        <LeafIcon  className="scatter-icon text-ink w-12 sm:w-16 top-[38%] left-[2%] sm:left-[3%] hidden sm:block" />
+        <EyeIcon   className="scatter-icon text-ink w-20 sm:w-24 top-[8%]  right-[4%] sm:right-[7%]" />
+        <LeafIcon  className="scatter-icon text-ink w-12 sm:w-16 top-[38%] left-[2%] hidden sm:block" />
         <AtomIcon  className="scatter-icon text-ink w-16 sm:w-20 top-[32%] right-[2%] sm:right-[4%]" />
-        <SpiralIcon className="scatter-icon text-ink w-14 sm:w-18 bottom-[22%] right-[4%] sm:right-[5%] hidden sm:block" />
+        <SpiralIcon className="scatter-icon text-ink w-14 bottom-[22%] right-[4%] hidden sm:block" />
 
         <p className="label mb-5 rise">A place for the deeply curious</p>
-
         <h1 className="font-serif font-medium text-[44px] sm:text-[64px] md:text-[80px] lg:text-[96px] leading-[1.0] tracking-[-0.03em] max-w-[12ch] rise delay-200">
           The world is{' '}
-          <em className="not-italic text-accent-gold">stranger</em>{' '}
+          <em className="not-italic" style={{ color: '#C4922A' }}>stranger</em>{' '}
           than you think
         </h1>
-
-        <p className="mt-6 text-[15px] sm:text-[17px] text-ink-muted max-w-[42ch] leading-relaxed font-light rise delay-300">
+        <p className="mt-6 text-[15px] sm:text-[17px] max-w-[42ch] leading-relaxed font-light rise delay-300" style={{ color: '#7A7166' }}>
           Pandorax is a daily feed of the most astonishing discoveries, simulations, and ideas — curated for people who can't stop wondering.
         </p>
-
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-3 rise delay-400">
           {session ? (
-            <Link to="/feed" className="btn-primary w-full sm:w-auto justify-center">
-              Go to your feed →
-            </Link>
+            <Link to="/feed" className="btn-primary w-full sm:w-auto justify-center">Go to your feed →</Link>
           ) : (
             <>
               <button onClick={signInWithGoogle} className="btn-primary w-full sm:w-auto justify-center gap-3">
-                <GoogleIcon />
-                Continue with Google
+                <GoogleIcon /> Continue with Google
               </button>
-              <Link to="/feed" className="btn-ghost text-[14px]">
-                Browse without signing in ↓
-              </Link>
+              <Link to="/feed" className="btn-ghost text-[14px]">Browse without signing in ↓</Link>
             </>
           )}
         </div>
 
         {/* Ticker */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-ink/10 bg-ink/[0.03] py-3 overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 border-t overflow-hidden py-3" style={{ borderColor: 'rgba(26,23,20,0.1)', background: 'rgba(26,23,20,0.03)' }}>
           <div className="flex whitespace-nowrap ticker-scroll">
             {[...TICKERS, ...TICKERS].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-2.5 px-8 text-[12px] text-ink-muted">
-                <span className="w-1 h-1 rounded-full bg-ink-faint flex-shrink-0" />
-                <strong className="text-ink font-medium">{t}</strong>
+              <span key={i} className="inline-flex items-center gap-2.5 px-8 text-[12px]" style={{ color: '#7A7166' }}>
+                <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: '#B5ADA0' }} />
+                <strong style={{ color: '#1A1714', fontWeight: 500 }}>{t}</strong>
               </span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── WONDERS PREVIEW ────────────────────────────── */}
+      {/* ── WONDERS FEED — REAL DATA ── */}
       <section className="px-4 sm:px-6 py-16 sm:py-24 max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
           <div>
             <p className="label mb-3">The Feed</p>
             <h2 className="font-serif font-medium text-[32px] sm:text-[44px] leading-[1.1] tracking-tight">
-              Today's <em className="text-accent-coral">wonders</em>
+              Today's <em style={{ color: '#D4604A', fontStyle: 'italic' }}>wonders</em>
             </h2>
           </div>
-          <p className="text-[14px] text-ink-muted max-w-[38ch] sm:text-right leading-relaxed">
+          <p className="text-[14px] max-w-[38ch] leading-relaxed" style={{ color: '#7A7166' }}>
             The most surprising, beautiful, and mind-bending discoveries — updated constantly.
           </p>
         </div>
 
-        {/* Grid — 1 col on mobile, 2 on sm, 3 on lg */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border border-ink/10 divide-y sm:divide-y-0 divide-ink/10">
-          {PREVIEW_WONDERS.map((w, i) => (
-            <PreviewCard key={i} w={w} span={w.featured && 'sm:col-span-2'} />
-          ))}
-        </div>
+        {wonders.length === 0 ? (
+          /* Skeleton while loading */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px border" style={{ background: 'rgba(26,23,20,0.08)', borderColor: 'rgba(26,23,20,0.1)' }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className={`p-5 animate-pulse flex flex-col gap-3 ${i === 0 ? 'sm:col-span-2 bg-[#1A1714]' : ''}`} style={{ background: i === 0 ? '#1A1714' : '#F2EDE3' }}>
+                <div className="h-3 w-20 rounded-full" style={{ background: i === 0 ? 'rgba(242,237,227,0.15)' : 'rgba(26,23,20,0.08)' }} />
+                <div className="h-5 w-full rounded" style={{ background: i === 0 ? 'rgba(242,237,227,0.12)' : 'rgba(26,23,20,0.07)' }} />
+                <div className="h-5 w-3/4 rounded" style={{ background: i === 0 ? 'rgba(242,237,227,0.1)' : 'rgba(26,23,20,0.05)' }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px border" style={{ background: 'rgba(26,23,20,0.08)', borderColor: 'rgba(26,23,20,0.1)' }}>
+            {/* Featured */}
+            {featured && (
+              <div
+                className="sm:col-span-2 bg-[#1A1714] p-6 sm:p-8 flex flex-col gap-4 cursor-pointer group relative overflow-hidden"
+                onClick={() => setActive(featured)}
+              >
+                {featured.image_url && (
+                  <img src={featured.image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity" />
+                )}
+                <div className="relative z-10 flex flex-col gap-4 h-full">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: CATEGORY_COLORS[featured.category_slug] ?? '#C4922A' }} />
+                    <span className="text-[10px] font-medium tracking-widest uppercase" style={{ color: 'rgba(242,237,227,0.55)' }}>
+                      {featured.category_emoji} {featured.category_label}
+                    </span>
+                  </div>
+                  <h3 className="font-serif font-medium text-[20px] sm:text-[26px] leading-[1.2] tracking-tight" style={{ color: '#F2EDE3' }}>
+                    {featured.headline}
+                  </h3>
+                  {featured.body && (
+                    <p className="text-[13px] leading-relaxed line-clamp-2" style={{ color: 'rgba(242,237,227,0.55)' }}>{featured.body}</p>
+                  )}
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[12px]" style={{ color: 'rgba(242,237,227,0.4)' }}>
+                      {featured.source_name && <span>{featured.source_name}</span>}
+                      <span>·</span>
+                      <span>{timeAgo(featured.published_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1 text-[12px]" style={{ color: 'rgba(242,237,227,0.4)' }}>
+                        <MessageCircle size={12} /> {fmtNum(featured.comment_count)}
+                      </span>
+                      <span className="flex items-center gap-1 text-[12px]" style={{ color: likedIds.has(featured.id) ? '#D4604A' : 'rgba(242,237,227,0.4)' }}>
+                        <Heart size={12} fill={likedIds.has(featured.id) ? 'currentColor' : 'none'} /> {fmtNum(featured.like_count)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Regular cards */}
+            {rest.map(w => (
+              <div
+                key={w.id}
+                className="p-5 flex flex-col gap-3 cursor-pointer group"
+                style={{ background: '#F2EDE3' }}
+                onClick={() => setActive(w)}
+              >
+                {w.image_url && (
+                  <div className="overflow-hidden aspect-[16/9] -mx-5 -mt-5 mb-1">
+                    <img src={w.image_url} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: CATEGORY_COLORS[w.category_slug] ?? '#7A7166' }} />
+                    <span className="text-[10px] font-medium tracking-widest uppercase" style={{ color: CATEGORY_COLORS[w.category_slug] ?? '#7A7166' }}>
+                      {w.category_emoji} {w.category_label}
+                    </span>
+                  </div>
+                  <span className="text-[11px]" style={{ color: '#B5ADA0' }}>{timeAgo(w.published_at)}</span>
+                </div>
+                <h3 className="font-serif font-medium text-[16px] leading-[1.3] tracking-tight flex-1" style={{ color: '#1A1714' }}>
+                  {w.headline}
+                </h3>
+                <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'rgba(26,23,20,0.08)' }}>
+                  <span className="text-[12px]" style={{ color: '#B5ADA0' }}>{w.source_name ?? w.username}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1 text-[12px]" style={{ color: '#B5ADA0' }}>
+                      <MessageCircle size={12} /> {fmtNum(w.comment_count)}
+                    </span>
+                    <span className="flex items-center gap-1 text-[12px]" style={{ color: likedIds.has(w.id) ? '#D4604A' : '#B5ADA0' }}>
+                      <Heart size={12} fill={likedIds.has(w.id) ? 'currentColor' : 'none'} /> {fmtNum(w.like_count)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-8 text-center">
           <Link to="/feed" className="btn-outline">See all wonders →</Link>
         </div>
       </section>
 
-      {/* ── SIMULATIONS ────────────────────────────────── */}
-      <section className="bg-ink text-beige py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden">
-        {/* paper texture on dark bg */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '300px' }} />
-
+      {/* ── SIMULATIONS ── */}
+      <section className="py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden" style={{ background: '#1A1714', color: '#F2EDE3' }}>
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '300px' }} />
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
-            <p className="label text-beige/40 mb-4">Daily Simulations</p>
-            <h2 className="font-serif font-medium text-[32px] sm:text-[44px] leading-[1.1] tracking-tight text-beige mb-5">
-              Play with <em className="text-accent-gold">reality</em>
+            <p className="label mb-4" style={{ color: 'rgba(242,237,227,0.4)' }}>Daily Simulations</p>
+            <h2 className="font-serif font-medium text-[32px] sm:text-[44px] leading-[1.1] tracking-tight mb-5">
+              Play with <em style={{ color: '#C4922A', fontStyle: 'italic' }}>reality</em>
             </h2>
-            <p className="text-[14px] sm:text-[15px] text-beige/55 leading-relaxed mb-8 max-w-[42ch]">
+            <p className="text-[14px] sm:text-[15px] leading-relaxed mb-8 max-w-[42ch]" style={{ color: 'rgba(242,237,227,0.55)' }}>
               Every day, one new hand-crafted interactive simulation drops. Explore a living ecosystem, a physics sandbox, a cellular automaton — then come back tomorrow.
             </p>
-
-            {/* Calendar strip */}
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {['Mon 14','Tue 15','Wed 16','Thu 17','Fri 18','Sat 19'].map((d, i) => (
-                <button
-                  key={d}
-                  className={`flex-shrink-0 w-12 h-12 border rounded-px text-center transition-all ${
-                    i === 3
-                      ? 'border-accent-gold bg-accent-gold/10 text-accent-gold'
-                      : i > 3
-                      ? 'border-beige/10 text-beige/20 cursor-not-allowed'
-                      : 'border-beige/12 text-beige/40 hover:border-beige/30'
-                  }`}
-                >
-                  <div className="text-[9px] uppercase tracking-wider">{d.split(' ')[0]}</div>
-                  <div className="text-[13px] font-medium">{d.split(' ')[1]}</div>
-                </button>
-              ))}
-            </div>
+            <Link to="/sims" className="btn-outline" style={{ borderColor: 'rgba(242,237,227,0.2)', color: '#F2EDE3' }}>
+              Go to simulations →
+            </Link>
           </div>
-
-          {/* Sim canvas */}
-          <div className="border border-beige/10 rounded-px overflow-hidden relative" style={{ aspectRatio: '16/10' }}>
+          <div className="border overflow-hidden relative" style={{ borderColor: 'rgba(242,237,227,0.1)', borderRadius: 2, aspectRatio: '16/10' }}>
             <canvas ref={canvasRef} className="w-full h-full" />
-            <div className="absolute bottom-0 left-0 right-0 px-5 py-4"
-              style={{ background: 'linear-gradient(transparent, rgba(26,23,20,0.85))' }}>
-              <div className="font-serif text-[15px] text-beige">Murmuration — Starling Flocking Behaviour</div>
-              <div className="text-[11px] text-beige/40 mt-0.5">Today's simulation · Live preview</div>
+            <div className="absolute bottom-0 left-0 right-0 px-5 py-4" style={{ background: 'linear-gradient(transparent, rgba(26,23,20,0.85))' }}>
+              <div className="font-serif text-[15px]" style={{ color: '#F2EDE3' }}>Murmuration — Starling Flocking Behaviour</div>
+              <div className="text-[11px] mt-0.5" style={{ color: 'rgba(242,237,227,0.4)' }}>Live preview · click to interact</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── FORUMS PREVIEW ─────────────────────────────── */}
+      {/* ── FORUMS PREVIEW ── */}
       <section className="py-16 sm:py-24 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
             <p className="label mb-4">Forums</p>
             <h2 className="font-serif font-medium text-[32px] sm:text-[44px] leading-[1.1] tracking-tight mb-5">
               The rabbit hole{' '}
-              <em className="text-accent-green">goes deeper</em>
+              <em style={{ color: '#4A7C59', fontStyle: 'italic' }}>goes deeper</em>
             </h2>
-            <p className="text-[14px] sm:text-[15px] text-ink-muted leading-relaxed mb-8 max-w-[42ch]">
+            <p className="text-[14px] sm:text-[15px] leading-relaxed mb-8 max-w-[42ch]" style={{ color: '#7A7166' }}>
               Start a thread, ask the impossible question, debate with people who find the same things wondrous that you do.
             </p>
             <Link to="/forums" className="btn-primary">Browse all threads →</Link>
           </div>
-
-          <div className="flex flex-col border border-ink/10 divide-y divide-ink/10">
+          <div className="flex flex-col border divide-y" style={{ borderColor: 'rgba(26,23,20,0.1)', borderRadius: 0 }}>
             {[
               { icon: '🌿', title: 'If trees communicate via fungal networks, do forests have a collective memory?', tag: 'Biology', replies: 143, likes: 892 },
               { icon: '🌌', title: 'What would a universe with different physical constants actually look like?', tag: 'Physics', replies: 89, likes: 654 },
               { icon: '🔺', title: 'The Voynich manuscript has never been decoded. My best theory after 3 years.', tag: 'History', replies: 211, likes: '1.4k' },
               { icon: '🧠', title: 'Why does music give some people chills but not others? The neuroscience.', tag: 'Psychology', replies: 67, likes: 445 },
             ].map((t, i) => (
-              <div key={i} className="flex items-start gap-3 px-4 py-4 hover:bg-beige-dark transition-colors cursor-pointer">
+              <Link key={i} to="/forums" className="flex items-start gap-3 px-4 py-4 transition-colors" style={{ borderColor: 'rgba(26,23,20,0.08)' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#E8E0D0'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <span className="text-[18px] mt-0.5 flex-shrink-0">{t.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-serif text-[14px] font-medium leading-snug text-ink">{t.title}</p>
-                  <p className="text-[12px] text-ink-faint mt-1">{t.tag}</p>
+                  <p className="font-serif text-[14px] font-medium leading-snug" style={{ color: '#1A1714' }}>{t.title}</p>
+                  <p className="text-[12px] mt-1" style={{ color: '#B5ADA0' }}>{t.tag}</p>
                 </div>
-                <div className="flex-shrink-0 text-right text-[12px] text-ink-faint">
+                <div className="flex-shrink-0 text-right text-[12px]" style={{ color: '#B5ADA0' }}>
                   <div>{t.replies} replies</div>
                   <div>↑ {t.likes}</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CATEGORY TAGS ──────────────────────────────── */}
-      <section className="py-12 px-4 sm:px-6 border-t border-ink/8 bg-beige-mid">
+      {/* ── CATEGORY TAGS ── */}
+      <section className="py-12 px-4 sm:px-6 border-t" style={{ background: '#EDE6D8', borderColor: 'rgba(26,23,20,0.08)' }}>
         <div className="max-w-3xl mx-auto text-center">
-          <h3 className="font-serif text-[22px] sm:text-[28px] font-medium tracking-tight mb-6">
-            What draws you in?
-          </h3>
+          <h3 className="font-serif text-[22px] sm:text-[28px] font-medium tracking-tight mb-6">What draws you in?</h3>
           <div className="flex flex-wrap gap-2 justify-center">
-            {CATEGORY_TAGS.map(({ emoji, label }) => (
-              <button key={label} className="tag-pill">
+            {CATEGORY_TAGS.map(({ emoji, label, slug }) => (
+              <Link key={slug} to={`/feed?category=${slug}`} className="tag-pill">
                 <span>{emoji}</span> {label}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── FINAL CTA ───────────────────────────────────── */}
+      {/* ── CTA ── */}
       <section className="py-20 sm:py-32 px-4 text-center relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <span className="font-serif font-bold text-[18vw] text-transparent leading-none"
-            style={{ WebkitTextStroke: '1px rgba(26,23,20,0.06)' }}>
+          <span className="font-serif font-bold leading-none" style={{ fontSize: '18vw', color: 'transparent', WebkitTextStroke: '1px rgba(26,23,20,0.06)' }}>
             Pandorax
           </span>
         </div>
-
         <div className="relative">
-          <h2 className="font-serif font-medium text-[36px] sm:text-[56px] md:text-[72px] leading-[1.0] tracking-[-0.03em] mb-6">
-            The box is<br /><em className="text-accent-gold">already open</em>
+          <h2 className="font-serif font-medium leading-[1.0] tracking-[-0.03em] mb-6" style={{ fontSize: 'clamp(36px, 6vw, 72px)' }}>
+            The box is<br /><em style={{ color: '#C4922A', fontStyle: 'italic' }}>already open</em>
           </h2>
-          <p className="text-[15px] sm:text-[16px] text-ink-muted mb-10 max-w-[36ch] mx-auto leading-relaxed">
+          <p className="text-[15px] sm:text-[16px] mb-10 max-w-[36ch] mx-auto leading-relaxed" style={{ color: '#7A7166' }}>
             Join the people who can't stop asking why. Free to use, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {session ? (
-              <Link to="/feed" className="btn-primary justify-center">
-                Go to your feed →
-              </Link>
+              <Link to="/feed" className="btn-primary justify-center">Go to your feed →</Link>
             ) : (
               <>
-                <button onClick={signInWithGoogle} className="btn-outline justify-center gap-3">
-                  <GoogleIcon />
-                  Sign up with Google
-                </button>
-                <Link to="/feed" className="btn-primary justify-center">
-                  Browse as guest →
-                </Link>
+                <button onClick={signInWithGoogle} className="btn-outline justify-center gap-3"><GoogleIcon /> Sign up with Google</button>
+                <Link to="/feed" className="btn-primary justify-center">Browse as guest →</Link>
               </>
             )}
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ─────────────────────────────────────── */}
-      <footer className="border-t border-ink/10 px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[13px] text-ink-faint">
-        <span className="font-serif font-semibold text-[15px] text-ink">
-          Pandora<span className="text-accent-gold">x</span>
+      {/* ── FOOTER ── */}
+      <footer className="border-t px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[13px]" style={{ borderColor: 'rgba(26,23,20,0.1)', color: '#B5ADA0' }}>
+        <span className="font-serif font-semibold text-[15px]" style={{ color: '#1A1714' }}>
+          Pandora<span style={{ color: '#C4922A' }}>x</span>
         </span>
         <div className="flex gap-6">
-          <a href="#" className="hover:text-ink transition-colors">About</a>
-          <a href="#" className="hover:text-ink transition-colors">Submit a Wonder</a>
-          <a href="#" className="hover:text-ink transition-colors">Privacy</a>
+          {['About', 'Submit a Wonder', 'Privacy'].map(l => (
+            <a key={l} href="#" className="hover:text-ink transition-colors">{l}</a>
+          ))}
         </div>
         <span className="font-serif italic">Stay curious.</span>
       </footer>
-    </div>
-  )
-}
 
-function PreviewCard({ w, span }) {
-  return (
-    <div className={`
-      p-5 sm:p-6 border-r-0 sm:border-r border-ink/10 last:border-r-0 cursor-pointer
-      transition-colors hover:bg-beige-dark relative overflow-hidden
-      ${w.featured ? `bg-ink text-beige ${span}` : 'bg-beige'}
-    `}>
-      {/* tag */}
-      <div className="flex items-center gap-1.5 mb-3">
-        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: w.color }} />
-        <span className="text-[10px] font-medium tracking-widest uppercase"
-          style={{ color: w.featured ? 'rgba(242,237,227,0.55)' : w.color }}>
-          {w.emoji} {w.tag}
-        </span>
-      </div>
-
-      <h3 className={`font-serif font-medium leading-[1.3] tracking-tight mb-4 ${
-        w.featured ? 'text-[20px] sm:text-[24px] text-beige' : 'text-[16px] text-ink'
-      }`}>
-        {w.headline}
-      </h3>
-
-      <div className="flex items-center justify-between mt-auto">
-        <span className={`text-[11px] ${w.featured ? 'text-beige/40' : 'text-ink-faint'}`}>{w.ago}</span>
-        <div className={`flex items-center gap-1 text-[11px] ${w.featured ? 'text-beige/40' : 'text-ink-faint'}`}>
-          <span>♥</span> {w.likes}
-        </div>
-      </div>
+      {activeWonder && <WonderModal wonder={activeWonder} onClose={() => setActive(null)} />}
     </div>
   )
 }

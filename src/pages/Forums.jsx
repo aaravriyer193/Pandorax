@@ -201,7 +201,7 @@ function NewThreadModal({ onClose, categories }) {
   const [imageFile,setImg]      = useState(null)
   const [preview,  setPreview]  = useState(null)
   const [busy,     setBusy]     = useState(false)
-  const fileRef = React.useRef(null)
+  const fileRef = useRef(null)
 
   function handleImage(e) {
     const f = e.target.files[0]

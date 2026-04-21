@@ -3,7 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pandorax - Feed your insaitable curiosity.</title>
+    <title>Pandorax - Feed your insatiable curiosity.</title>
+    
+    <script>
+      // Run this immediately to update the title based on the URL path
+      const path = window.location.pathname;
+      
+      if (path === "/" || path === "") {
+        // Use the full tagline for the root "/" URL
+        document.title = "Pandorax - Feed your insatiable curiosity.";
+      } else if (path.startsWith("/u/")) {
+        // Handle User Profiles (e.g., /u/username)
+        const slug = path.replace("/u/", "");
+        document.title = `Profile: ${slug} - Pandorax`;
+      } else if (path.match(/^\/forums?\/(.+)/)) {
+        // Handle Forum Threads (e.g., /forum/thread-id or /forums/thread-id)
+        const match = path.match(/^\/forums?\/(.+)/);
+        const slug = match ? match[1] : "";
+        document.title = `Thread: ${slug} - Pandorax`;
+      } else {
+        // Fallback for all other pages (e.g., /about-us -> About Us - Pandorax)
+        let pageName = path.substring(1).replace(/[-/]/g, ' ');
+        pageName = pageName.replace(/\b\w/g, char => char.toUpperCase());
+        document.title = `${pageName} - Pandorax`;
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

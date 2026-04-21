@@ -5,7 +5,6 @@ import { useAuth } from '../hooks/useAuth'
 import WonderCard from '../components/WonderCard'
 import WonderModal from '../components/WonderModal'
 import SubmitWonderModal from '../components/SubmitWonderModal'
-import CategoryPill from '../components/CategoryPill'
 
 const CATEGORIES = [
   { slug: null,           label: 'All',          emoji: '✦' },
@@ -25,24 +24,27 @@ const SORT_OPTIONS = [
   { key: 'trending', label: 'Trending', icon: TrendingUp },
 ]
 
-// Skeleton card
+// Skeleton card (Updated to not look like a small grid box)
 function WonderSkeleton() {
   return (
-    <div className="card p-5 flex flex-col gap-3 animate-pulse">
-      <div className="flex items-center justify-between">
-        <div className="h-4 w-20 bg-ink/8 rounded-full" />
-        <div className="h-3 w-14 bg-ink/6 rounded" />
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="h-4 w-full bg-ink/8 rounded" />
-        <div className="h-4 w-5/6 bg-ink/7 rounded" />
-        <div className="h-4 w-4/6 bg-ink/6 rounded" />
-      </div>
-      <div className="h-3 w-full bg-ink/5 rounded" />
-      <div className="h-3 w-2/3 bg-ink/5 rounded" />
-      <div className="flex items-center justify-between pt-2 border-t border-ink/8">
-        <div className="h-3 w-20 bg-ink/6 rounded" />
-        <div className="h-3 w-16 bg-ink/6 rounded" />
+    <div className="card flex flex-col sm:flex-row overflow-hidden animate-pulse">
+      <div className="w-full sm:w-[40%] lg:w-[35%] aspect-[16/9] sm:aspect-auto bg-ink/8 border-b sm:border-b-0 sm:border-r border-ink/10 flex-shrink-0" />
+      <div className="p-5 sm:p-6 lg:p-7 flex flex-col gap-3 flex-1">
+        <div className="flex items-center justify-between">
+          <div className="h-4 w-20 bg-ink/8 rounded-full" />
+          <div className="h-3 w-14 bg-ink/6 rounded" />
+        </div>
+        <div className="flex flex-col gap-2 mt-2">
+          <div className="h-5 w-full bg-ink/8 rounded" />
+          <div className="h-5 w-5/6 bg-ink/7 rounded" />
+        </div>
+        <div className="h-3 w-full bg-ink/5 rounded mt-2" />
+        <div className="h-3 w-2/3 bg-ink/5 rounded" />
+        <div className="flex-1 min-h-[1.5rem]" />
+        <div className="flex items-center justify-between pt-4 mt-2 border-t border-ink/8">
+          <div className="h-3 w-20 bg-ink/6 rounded" />
+          <div className="h-3 w-32 bg-ink/6 rounded" />
+        </div>
       </div>
     </div>
   )
@@ -173,8 +175,8 @@ export default function Feed() {
 
         {/* ── Content ── */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink/10 border border-ink/10">
-            {Array.from({ length: 6 }).map((_, i) => <WonderSkeleton key={i} />)}
+          <div className="flex flex-col gap-4 sm:gap-6">
+            {Array.from({ length: 4 }).map((_, i) => <WonderSkeleton key={i} />)}
           </div>
         ) : wonders.length === 0 ? (
           <div className="text-center py-24">
@@ -184,33 +186,29 @@ export default function Feed() {
             </p>
           </div>
         ) : (
-          <>
+          <div className="flex flex-col gap-4 sm:gap-6">
             {/* Featured card */}
             {featured && (
-              <div className="mb-px border border-ink/10 border-b-0">
-                <WonderCard
-                  wonder={featured}
-                  featured
-                  onCommentClick={setActiveWonder}
-                />
-              </div>
+              <WonderCard
+                wonder={featured}
+                featured
+                onCommentClick={setActiveWonder}
+              />
             )}
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink/10 border border-ink/10 border-t-0">
-              {rest.map(w => (
-                <WonderCard
-                  key={w.id}
-                  wonder={w}
-                  onCommentClick={setActiveWonder}
-                />
-              ))}
-            </div>
-          </>
+            {/* List */}
+            {rest.map(w => (
+              <WonderCard
+                key={w.id}
+                wonder={w}
+                onCommentClick={setActiveWonder}
+              />
+            ))}
+          </div>
         )}
 
         {/* ── Infinite scroll sentinel ── */}
-        <div ref={loaderRef} className="py-6 flex justify-center">
+        <div ref={loaderRef} className="py-8 flex justify-center">
           {loadingMore && (
             <div className="flex items-center gap-2 text-ink-faint text-[13px]">
               <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
