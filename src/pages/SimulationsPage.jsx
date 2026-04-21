@@ -35,26 +35,49 @@ export default function SimulationsPage() {
   const today                   = new Date().toISOString().split('T')[0]
   const [selectedDate, setDate] = useState(today)
   const [sim, setSim]           = useState(null)
+  const [htmlContent, setHtmlContent] = useState(null)
   const [loading, setLoading]   = useState(true)
   const [fullscreen, setFull]   = useState(false)
   const days                    = lastNDays(14)
 
   useEffect(() => {
     fetchSim(selectedDate)
-    // Increment view
-    if (sim?.id) supabase.rpc('increment_view', { p_id: sim.id, p_type: 'simulation' })
   }, [selectedDate])
+
+  // Track views separately once the sim is loaded
+  useEffect(() => {
+    if (sim?.id) supabase.rpc('increment_view', { p_id: sim.id, p_type: 'simulation' })
+  }, [sim?.id])
 
   async function fetchSim(date) {
     setLoading(true)
     setSim(null)
+    setHtmlContent(null)
+    
     const { data, error } = await supabase
       .from('simulations')
       .select('*')
       .eq('sim_date', date)
       .single()
-    if (!error) setSim(data)
-    setLoading(false)
+      
+    if (!error && data) {
+      setSim(data)
+      setLoading(false) // Show the layout immediately
+      
+      // Fetch the raw HTML to prevent the browser from downloading it as a file
+      if (data.html_url) {
+        try {
+          const res = await fetch(data.html_url)
+          const text = await res.text()
+          setHtmlContent(text)
+        } catch (e) {
+          console.error('Failed to fetch sim HTML:', e)
+          toast.error('Failed to load simulation engine')
+        }
+      }
+    } else {
+      setLoading(false)
+    }
   }
 
   function prevDay() {
@@ -163,18 +186,26 @@ export default function SimulationsPage() {
                 </button>
               </div>
 
-              {/* iframe */}
+              {/* iframe via srcDoc */}
               <div
-                className="w-full border border-ink/12 bg-beige-mid overflow-hidden"
+                className="w-full border border-ink/12 bg-beige-mid overflow-hidden relative"
                 style={{ aspectRatio: '16/10' }}
               >
-                <iframe
-                  src={sim.html_url}
-                  title={sim.title}
-                  className="w-full h-full border-0"
-                  sandbox="allow-scripts allow-same-origin"
-                  loading="lazy"
-                />
+                {htmlContent ? (
+                  <iframe
+                    srcDoc={htmlContent}
+                    title={sim.title}
+                    className="absolute inset-0 w-full h-full border-0"
+                    sandbox="allow-scripts allow-same-origin"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-ink/5">
+                    <span className="text-[13px] text-ink-muted font-serif italic animate-pulse">
+                      Initializing simulation engine...
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Description */}
@@ -220,9 +251,9 @@ export default function SimulationsPage() {
       {/* ── Fullscreen overlay ── */}
       {fullscreen && sim && (
         <>
-          <div className="fixed inset-0 z-50 bg-ink/90 flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-beige/10">
-              <span className="font-serif text-beige text-[15px]">{sim.title}</span>
+          <div className="fixed inset-0 z-[100] bg-ink/95 backdrop-blur-sm flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-beige/10">
+              <span className="font-serif text-beige text-[16px]">{sim.title}</span>
               <button
                 onClick={() => setFull(false)}
                 className="text-beige/60 hover:text-beige transition-colors text-[13px] flex items-center gap-1.5"
@@ -230,12 +261,18 @@ export default function SimulationsPage() {
                 Exit fullscreen
               </button>
             </div>
-            <iframe
-              src={sim.html_url}
-              title={sim.title}
-              className="flex-1 border-0 w-full"
-              sandbox="allow-scripts allow-same-origin"
-            />
+            {htmlContent ? (
+              <iframe
+                srcDoc={htmlContent}
+                title={sim.title}
+                className="flex-1 border-0 w-full bg-ink"
+                sandbox="allow-scripts allow-same-origin"
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <span className="text-beige/60">Loading...</span>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -248,7 +285,6 @@ function NoSimDay({ date, today }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="mb-6 opacity-20">
-        {/* Ammonite icon */}
         <svg width="64" height="64" viewBox="0 0 80 80" fill="none">
           <path d="M40 8C22.3 8 8 22.3 8 40s14.3 32 32 32 32-14.3 32-32S57.7 8 40 8z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
           <path d="M40 18c-12.2 0-22 9.8-22 22s9.8 22 22 22 22-9.8 22-22-9.8-22-22-22z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
