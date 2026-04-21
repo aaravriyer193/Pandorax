@@ -1,0 +1,240 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Paper texture ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.038;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 300px 300px;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: #F2EDE3;
+    color: #1A1714;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4 { font-family: 'Lora', Georgia, serif; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background-color: #EDE6D8; }
+  ::-webkit-scrollbar-thumb { background-color: #B5ADA0; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background-color: #7A7166; }
+}
+
+@layer components {
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 500;
+    background-color: #1A1714;
+    color: #F2EDE3;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2px;
+    font-size: 15px;
+    border: none;
+    transition: all 0.2s;
+    user-select: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-primary:hover {
+    background-color: #3D3830;
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    background-color: transparent;
+    color: #1A1714;
+    padding: 10px 1.25rem;
+    border-radius: 2px;
+    font-size: 14px;
+    border: 1px solid rgba(26,23,20,0.2);
+    transition: all 0.2s;
+    user-select: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-outline:hover {
+    border-color: rgba(26,23,20,0.5);
+    transform: translateY(-1px);
+  }
+  .btn-outline:active { transform: translateY(0); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    color: #7A7166;
+    font-size: 13px;
+    transition: color 0.15s;
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .btn-ghost:hover { color: #1A1714; }
+
+  .card {
+    background-color: #F2EDE3;
+    border: 1px solid rgba(26,23,20,0.1);
+    transition: background-color 0.15s;
+  }
+  .card-hover:hover {
+    background-color: #E8E0D0;
+    cursor: pointer;
+  }
+
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #B5ADA0;
+  }
+
+  .input {
+    width: 100%;
+    background-color: #F2EDE3;
+    border: 1px solid rgba(26,23,20,0.15);
+    border-radius: 2px;
+    padding: 0.625rem 0.75rem;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: #1A1714;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input::placeholder { color: #B5ADA0; }
+  .input:focus { border-color: rgba(26,23,20,0.4); }
+
+  .textarea {
+    width: 100%;
+    background-color: #F2EDE3;
+    border: 1px solid rgba(26,23,20,0.15);
+    border-radius: 2px;
+    padding: 0.625rem 0.75rem;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: #1A1714;
+    outline: none;
+    transition: border-color 0.15s;
+    resize: none;
+    line-height: 1.6;
+  }
+  .textarea::placeholder { color: #B5ADA0; }
+  .textarea:focus { border-color: rgba(26,23,20,0.4); }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 12px;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid rgba(26,23,20,0.15);
+    border-radius: 9999px;
+    color: #7A7166;
+    transition: all 0.15s;
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tag-pill:hover {
+    border-color: rgba(26,23,20,0.35);
+    color: #1A1714;
+  }
+  .tag-pill-active {
+    background-color: #1A1714;
+    color: #F2EDE3;
+    border-color: #1A1714;
+  }
+
+  .divider {
+    border-top: 1px solid rgba(26,23,20,0.1);
+  }
+
+  .avatar {
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 500;
+    color: #F2EDE3;
+    user-select: none;
+    flex-shrink: 0;
+  }
+}
+
+@layer utilities {
+  .font-serif-italic { font-family: 'Lora', serif; font-style: italic; }
+
+  .ticker-scroll {
+    animation: ticker 35s linear infinite;
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  .rise {
+    animation: riseUp 0.7s ease both;
+  }
+  @keyframes riseUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+
+  .scatter-icon {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.07;
+  }
+}
