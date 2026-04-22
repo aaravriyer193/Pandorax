@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth.jsx'
 import Nav from './components/Nav'
 import Landing from './pages/Landing'
@@ -11,7 +11,6 @@ import Settings from './pages/Settings'
 import Admin from './pages/Admin'
 import Privacy from './pages/Privacy'
 import About from './pages/About'
-
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -44,7 +43,7 @@ function PageLoader() {
 
 export default function App() {
   return (
-    <>
+    <BrowserRouter>
       <Nav />
       <Routes>
         <Route path="/"           element={<Landing />} />
@@ -56,9 +55,9 @@ export default function App() {
         <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/admin"      element={<AdminRoute><Admin /></AdminRoute>} />
         <Route path="/about"      element={<About />} />
-        <Route path="/privacy"     element={<Privacy />} />
+        <Route path="/privacy"    element={<Privacy />} />
         <Route path="*"           element={<Navigate to="/feed" replace />} />
       </Routes>
-    </>
+    </BrowserRouter>
   )
 }
