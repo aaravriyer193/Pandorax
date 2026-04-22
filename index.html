@@ -3,28 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pandorax - Feed your insatiable curiosity.</title>
     
+    <title>Pandorax - Feed your insatiable curiosity.</title>
+    <meta name="title" content="Pandorax - Feed your insatiable curiosity." />
+    <meta name="description" content="A daily feed of the most astonishing discoveries, interactive simulations, and mind-bending ideas. A 100% non-profit space for the deeply curious." />
+    <meta name="theme-color" content="#1C1A17" />
+    <link rel="icon" type="image/x-icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://pandorax.walnutlabs.in/social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Pandorax - The world is stranger than you think." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://pandorax.walnutlabs.in/social-card.png" />
+    <meta name="twitter:image:alt" content="Pandorax - Feed your insatiable curiosity." />
+    <meta property="og:url" content="https://pandorax.walnutlabs.in/" />
+    <meta property="og:title" content="Pandorax - Feed your insatiable curiosity." />
+    <meta property="og:description" content="A daily feed of the most astonishing discoveries, interactive simulations, and mind-bending ideas. A 100% non-profit space for the deeply curious." />
+    <meta property="twitter:url" content="https://pandorax.walnutlabs.in/" />
+    <meta property="twitter:title" content="Pandorax - Feed your insatiable curiosity." />
+    <meta property="twitter:description" content="A daily feed of the most astonishing discoveries, interactive simulations, and mind-bending ideas." />
     <script>
       // Run this immediately to update the title based on the URL path
       const path = window.location.pathname;
       
       if (path === "/" || path === "") {
-        // Use the full tagline for the root "/" URL
         document.title = "Pandorax - Feed your insatiable curiosity.";
       } else if (path.startsWith("/u/")) {
-        // Handle User Profiles (e.g., /u/username)
         const slug = path.replace("/u/", "");
         document.title = `Profile: ${slug} - Pandorax`;
       } else if (path.match(/^\/forums?\/(.+)/)) {
-        // Handle Forum Threads (e.g., /forum/thread-id or /forums/thread-id)
         const match = path.match(/^\/forums?\/(.+)/);
         const slug = match ? match[1] : "";
         document.title = `Thread: ${slug} - Pandorax`;
       } else {
-        // Fallback for all other pages (e.g., /about-us -> About Us - Pandorax)
+        // Fallback for all other pages
         let pageName = path.substring(1).replace(/[-/]/g, ' ');
         pageName = pageName.replace(/\b\w/g, char => char.toUpperCase());
+        
+        // Map "Sims" to "Simulations"
+        if (pageName === 'Sims') {
+            pageName = 'Simulations';
+        }
+        
         document.title = `${pageName} - Pandorax`;
       }
     </script>

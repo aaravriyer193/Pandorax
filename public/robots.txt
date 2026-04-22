@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /settings/
+Disallow: /admin/
+
+# Point search engines directly to your sitemap
+Sitemap: https://pandorax.walnutlabs.in/sitemap.xml
