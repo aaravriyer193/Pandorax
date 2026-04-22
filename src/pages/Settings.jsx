@@ -40,14 +40,20 @@ export default function Settings() {
   const [avatarColor,   setAvatarColor]  = useState('#C4922A')
   const [avatarFile,    setAvatarFile]   = useState(null)
   const [avatarPreview, setAvatarPreview]= useState(null)
+  
   const [saving,        setSaving]       = useState(false)
   const [usernameError, setUsernameError]= useState('')
+  
+  // Deletion states
+  const [confirmDelete, setConfirmDelete]= useState(false)
+  const [isDeleting,    setIsDeleting]   = useState(false)
+  
   const fileRef = useRef(null)
 
   // Redirect if not signed in
   useEffect(() => {
     if (!session && !profile) navigate('/')
-  }, [session])
+  }, [session, profile, navigate])
 
   // Pre-fill form from profile
   useEffect(() => {
@@ -129,6 +135,32 @@ export default function Settings() {
       console.error(err)
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setIsDeleting(true)
+    try {
+      // Step 1: Attempt to delete the profile record directly
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', session.user.id)
+
+      if (profileError) throw profileError
+
+      // Step 2: If you have set up a Supabase RPC to delete auth.users, call it here:
+      // await supabase.rpc('delete_user_account')
+
+      // Step 3: Log them out and redirect
+      await signOut()
+      toast('Account permanently deleted')
+      navigate('/')
+    } catch (err) {
+      toast.error('Failed to delete account. Please try again.')
+      console.error(err)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -321,15 +353,55 @@ export default function Settings() {
           </div>
 
           {/* ── Danger zone ── */}
-          <section className="flex flex-col gap-3 pt-4 border-t" style={{ borderColor: 'rgba(26,23,20,0.1)' }}>
-            <h2 className="font-serif font-medium text-[14px] tracking-tight" style={{ color: '#B5ADA0' }}>Account</h2>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="btn-ghost text-[13px] self-start"
-            >
-              <LogOut size={14} /> Sign out
-            </button>
+          <section className="flex flex-col gap-3 pt-8 pb-12 mt-4 border-t" style={{ borderColor: 'rgba(26,23,20,0.1)' }}>
+            <h2 className="font-serif font-medium text-[14px] tracking-tight" style={{ color: '#B5ADA0' }}>Account settings</h2>
+            
+            <div className="flex items-center gap-4 mt-2">
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="btn-ghost text-[13px] self-start"
+              >
+                <LogOut size={14} /> Sign out
+              </button>
+            </div>
+
+            {/* Account Deletion Area */}
+            {confirmDelete ? (
+              <div className="p-4 rounded-[8px] mt-4 flex flex-col gap-3 border" style={{ borderColor: 'rgba(212,96,74,0.3)', background: 'rgba(212,96,74,0.05)' }}>
+                <p className="text-[13px] font-medium" style={{ color: '#D4604A' }}>
+                  Are you absolutely sure? This will permanently delete your profile, likes, and bookmarks.
+                </p>
+                <div className="flex items-center gap-3 mt-1">
+                  <button
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-colors disabled:opacity-50"
+                    style={{ background: '#D4604A', color: '#F2EDE3' }}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    disabled={isDeleting}
+                    className="btn-ghost text-[13px]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="btn-ghost text-[13px] self-start mt-2"
+                style={{ color: '#D4604A' }}
+              >
+                <Trash2 size={14} /> Delete account
+              </button>
+            )}
           </section>
 
         </form>

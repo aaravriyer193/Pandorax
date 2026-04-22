@@ -458,9 +458,9 @@ export default function Landing() {
           Pandora<span style={{ color: '#C4922A' }}>x</span>
         </span>
         <div className="flex gap-6">
-          {['About', 'Submit a Wonder', 'Privacy'].map(l => (
-            <a key={l} href="#" className="hover:text-ink transition-colors">{l}</a>
-          ))}
+          <Link to="/about" className="hover:text-ink transition-colors">About</Link>
+          <Link to="/feed" className="hover:text-ink transition-colors">Submit a Wonder</Link>
+          <Link to="/privacy" className="hover:text-ink transition-colors">Privacy</Link>
         </div>
         <span className="font-serif italic">Stay curious.</span>
       </footer>

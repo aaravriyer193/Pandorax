@@ -9,6 +9,9 @@ import ForumThread from './pages/ForumThread'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Admin from './pages/Admin'
+import Privacy from './pages/Privacy'
+import About from './pages/About'
+
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -52,6 +55,8 @@ export default function App() {
         <Route path="/u/:username"element={<Profile />} />
         <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/admin"      element={<AdminRoute><Admin /></AdminRoute>} />
+        <Route path="/about"      element={<About />} />
+        <Route path="/privacy"     element={<Privacy />} />
         <Route path="*"           element={<Navigate to="/feed" replace />} />
       </Routes>
     </>
