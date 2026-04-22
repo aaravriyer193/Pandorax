@@ -35,8 +35,9 @@ export default function Nav() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link to="/" className="font-serif font-semibold text-[18px] tracking-tight flex-shrink-0">
-            Pandora<span className="text-accent-gold">x</span>
+          <Link to="/" className="flex items-center gap-2 font-serif font-semibold text-[18px] tracking-tight flex-shrink-0">
+            <img src="/favicon.png" alt="Pandorax" className="w-6 h-6 rounded-sm" />
+            <span>Pandora<span className="text-accent-gold">x</span></span>
           </Link>
 
           {/* Desktop links */}
